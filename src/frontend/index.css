@@ -1,0 +1,197 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Fonts ──────────────────────────────────────── */
+@font-face {
+  font-family: "Sora";
+  src: url("/assets/fonts/Sora.woff2") format("woff2");
+  font-weight: 100 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Cabinet Grotesk";
+  src: url("/assets/fonts/CabinetGrotesk-Variable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@layer base {
+  :root {
+    --radius: 0.5rem;
+
+    /* ── SAT Store Color Palette (OKLCH raw L C H) ── */
+    /* Deep navy background */
+    --background: 0.12 0.018 260;
+    --foreground: 0.96 0.008 260;
+
+    /* Card: slightly lighter navy */
+    --card: 0.16 0.02 260;
+    --card-foreground: 0.96 0.008 260;
+
+    /* Popover */
+    --popover: 0.18 0.022 260;
+    --popover-foreground: 0.96 0.008 260;
+
+    /* Primary: warm amber-orange */
+    --primary: 0.75 0.17 55;
+    --primary-foreground: 0.1 0.01 260;
+
+    /* Secondary: muted navy */
+    --secondary: 0.22 0.025 260;
+    --secondary-foreground: 0.85 0.01 260;
+
+    /* Muted */
+    --muted: 0.2 0.02 260;
+    --muted-foreground: 0.6 0.015 260;
+
+    /* Accent: electric teal */
+    --accent: 0.72 0.15 195;
+    --accent-foreground: 0.1 0.01 260;
+
+    /* Destructive */
+    --destructive: 0.62 0.22 25;
+    --destructive-foreground: 0.98 0 0;
+
+    /* Borders */
+    --border: 0.28 0.025 260;
+    --input: 0.24 0.022 260;
+    --ring: 0.75 0.17 55;
+
+    /* Charts */
+    --chart-1: 0.75 0.17 55;
+    --chart-2: 0.72 0.15 195;
+    --chart-3: 0.65 0.18 320;
+    --chart-4: 0.7 0.14 145;
+    --chart-5: 0.62 0.22 25;
+
+    /* Sidebar */
+    --sidebar: 0.1 0.015 260;
+    --sidebar-foreground: 0.96 0.008 260;
+    --sidebar-primary: 0.75 0.17 55;
+    --sidebar-primary-foreground: 0.1 0.01 260;
+    --sidebar-accent: 0.22 0.025 260;
+    --sidebar-accent-foreground: 0.85 0.01 260;
+    --sidebar-border: 0.28 0.025 260;
+    --sidebar-ring: 0.75 0.17 55;
+
+    /* SAT Store custom tokens */
+    --header-bg: 0.09 0.015 260;
+    --hero-bg: 0.13 0.022 250;
+    --price-color: 0.78 0.18 55;
+    --star-color: 0.78 0.18 55;
+    --badge-sale: 0.62 0.22 25;
+    --success: 0.68 0.16 145;
+    --success-foreground: 0.12 0.01 145;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: "Cabinet Grotesk", sans-serif;
+    font-feature-settings: "kern" 1, "liga" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: "Sora", sans-serif;
+  }
+}
+
+/* ── SAT Store Custom Utilities ─────────────────── */
+@layer utilities {
+  .font-display {
+    font-family: "Sora", sans-serif;
+  }
+
+  .font-body {
+    font-family: "Cabinet Grotesk", sans-serif;
+  }
+
+  .text-price {
+    color: oklch(var(--price-color));
+  }
+
+  .text-star {
+    color: oklch(var(--star-color));
+  }
+
+  .bg-header {
+    background-color: oklch(var(--header-bg));
+  }
+
+  .bg-hero {
+    background-color: oklch(var(--hero-bg));
+  }
+
+  .bg-success {
+    background-color: oklch(var(--success));
+  }
+
+  .text-success {
+    color: oklch(var(--success));
+  }
+
+  .border-success {
+    border-color: oklch(var(--success));
+  }
+
+  /* Card hover glow - signature detail */
+  .product-card-hover {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .product-card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px oklch(0.75 0.17 55 / 0.18), 0 4px 16px oklch(0 0 0 / 0.4);
+  }
+
+  /* Gradient mesh hero */
+  .hero-gradient {
+    background: 
+      radial-gradient(ellipse 70% 60% at 10% 50%, oklch(0.75 0.17 55 / 0.12) 0%, transparent 70%),
+      radial-gradient(ellipse 50% 80% at 90% 20%, oklch(0.72 0.15 195 / 0.08) 0%, transparent 70%),
+      oklch(var(--hero-bg));
+  }
+
+  /* Header search bar */
+  .header-search {
+    background-color: oklch(0.97 0.005 260);
+    color: oklch(0.1 0.01 260);
+  }
+
+  .header-search::placeholder {
+    color: oklch(0.5 0.01 260);
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: oklch(var(--border)) transparent;
+  }
+}
+
+/* ── Animations ─────────────────────────────────── */
+@layer utilities {
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  .skeleton-shimmer {
+    background: linear-gradient(
+      90deg,
+      oklch(var(--muted)) 25%,
+      oklch(0.25 0.025 260) 50%,
+      oklch(var(--muted)) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+}
