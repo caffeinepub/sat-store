@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { CartItem, Order, Product } from "../backend.d";
 import { useActor } from "./useActor";
+export type { CartItem, Order, Product };
 
 // ── Products ───────────────────────────────────────
 
@@ -174,5 +175,21 @@ export function useGetOrder(orderId: bigint) {
       return actor.getOrder(orderId);
     },
     enabled: !!actor && !isFetching,
+  });
+}
+
+// ── Admin ──────────────────────────────────────────
+
+export function useInitialize() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      if (!actor) throw new Error("No actor");
+      await actor.initialize();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+    },
   });
 }

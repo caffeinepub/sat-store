@@ -25,6 +25,11 @@ export interface Order {
     timestamp: Time;
     items: Array<OrderItem>;
 }
+export interface UserProfile {
+    name: string;
+    email: string;
+    address: string;
+}
 export interface Product {
     id: bigint;
     name: string;
@@ -52,16 +57,19 @@ export interface backendInterface {
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     clearCart(): Promise<void>;
     filterProductsByCategory(category: string): Promise<Array<Product>>;
+    getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
     getCart(): Promise<Array<CartItem>>;
     getOrder(orderId: bigint): Promise<Order>;
     getProduct(id: bigint): Promise<Product>;
     getUserOrders(): Promise<Array<Order>>;
+    getUserProfile(user: Principal): Promise<UserProfile | null>;
     initialize(): Promise<void>;
     isCallerAdmin(): Promise<boolean>;
     listProducts(): Promise<Array<Product>>;
     placeOrder(): Promise<bigint>;
     removeFromCart(productId: bigint): Promise<void>;
+    saveCallerUserProfile(profile: UserProfile): Promise<void>;
     searchProducts(searchTerm: string): Promise<Array<Product>>;
     updateCartItem(productId: bigint, quantity: bigint): Promise<void>;
     updateOrderStatus(orderId: bigint, status: OrderStatus): Promise<void>;

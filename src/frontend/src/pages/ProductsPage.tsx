@@ -16,13 +16,13 @@ import { toast } from "sonner";
 import type { Product } from "../backend.d";
 
 const CATEGORIES = [
-  { label: "All", value: "all" },
-  { label: "Electronics", value: "Electronics" },
-  { label: "Clothing", value: "Clothing" },
-  { label: "Books", value: "Books" },
-  { label: "Home & Kitchen", value: "Home & Kitchen" },
-  { label: "Sports", value: "Sports" },
-  { label: "Toys", value: "Toys" },
+  { label: "All", value: "all", icon: "🛍️" },
+  { label: "Laptops", value: "Laptops", icon: "💻" },
+  { label: "Mobiles", value: "Mobiles", icon: "📱" },
+  { label: "Tablets", value: "Tablets", icon: "📟" },
+  { label: "Accessories", value: "Accessories", icon: "🎧" },
+  { label: "Electronics", value: "Electronics", icon: "⚡" },
+  { label: "Gaming", value: "Gaming", icon: "🎮" },
 ];
 
 export function ProductsPage() {
@@ -168,7 +168,7 @@ export function ProductsPage() {
                 key={cat.value}
                 value={cat.value}
                 data-ocid={`products.${cat.value.toLowerCase().replace(/ & /g, "_").replace(/ /g, "_")}.tab`}
-                className="text-xs px-3 whitespace-nowrap rounded-md data-[state=active]:text-[oklch(0.1_0.01_260)] font-semibold"
+                className="text-xs px-3 whitespace-nowrap rounded-md data-[state=active]:text-[oklch(0.1_0.01_260)] font-semibold flex items-center gap-1.5"
                 style={
                   activeCategory === cat.value
                     ? {
@@ -178,6 +178,7 @@ export function ProductsPage() {
                     : {}
                 }
               >
+                <span className="text-sm">{cat.icon}</span>
                 {cat.label}
               </TabsTrigger>
             ))}

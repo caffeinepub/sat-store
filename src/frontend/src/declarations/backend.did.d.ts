@@ -40,6 +40,11 @@ export interface Product {
   'priceCents' : bigint,
 }
 export type Time = bigint;
+export interface UserProfile {
+  'name' : string,
+  'email' : string,
+  'address' : string,
+}
 export type UserRole = { 'admin' : null } |
   { 'user' : null } |
   { 'guest' : null };
@@ -49,16 +54,19 @@ export interface _SERVICE {
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
   'clearCart' : ActorMethod<[], undefined>,
   'filterProductsByCategory' : ActorMethod<[string], Array<Product>>,
+  'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
   'getCart' : ActorMethod<[], Array<CartItem>>,
   'getOrder' : ActorMethod<[bigint], Order>,
   'getProduct' : ActorMethod<[bigint], Product>,
   'getUserOrders' : ActorMethod<[], Array<Order>>,
+  'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'initialize' : ActorMethod<[], undefined>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'listProducts' : ActorMethod<[], Array<Product>>,
   'placeOrder' : ActorMethod<[], bigint>,
   'removeFromCart' : ActorMethod<[bigint], undefined>,
+  'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'searchProducts' : ActorMethod<[string], Array<Product>>,
   'updateCartItem' : ActorMethod<[bigint, bigint], undefined>,
   'updateOrderStatus' : ActorMethod<[bigint, OrderStatus], undefined>,

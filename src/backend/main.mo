@@ -1,18 +1,18 @@
 import List "mo:core/List";
-import Order "mo:core/Order";
 import Map "mo:core/Map";
-import Array "mo:core/Array";
 import Text "mo:core/Text";
 import Time "mo:core/Time";
-import Iter "mo:core/Iter";
 import Runtime "mo:core/Runtime";
 import Principal "mo:core/Principal";
 import Int "mo:core/Int";
+import Order "mo:core/Order";
+import Iter "mo:core/Iter";
+import Array "mo:core/Array";
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
 
 actor {
-  // Product type and comparison
+  // Types for Product, Cart, and Orders
   type Product = {
     id : Nat;
     name : Text;
@@ -25,26 +25,17 @@ actor {
     stock : Nat;
   };
 
-  module Product {
-    public func compare(product1 : Product, product2 : Product) : Order.Order {
-      Int.compare(product1.id, product2.id);
-    };
-  };
-
-  // Cart item type and comparison
   type CartItem = {
     productId : Nat;
     quantity : Nat;
   };
 
-  // Order item type
   type OrderItem = {
     product : Product;
     quantity : Nat;
     totalPriceCents : Nat;
   };
 
-  // Order status type
   type OrderStatus = {
     #pending;
     #confirmed;
@@ -52,7 +43,6 @@ actor {
     #delivered;
   };
 
-  // Order type
   type Order = {
     id : Nat;
     items : [OrderItem];
@@ -62,87 +52,269 @@ actor {
     user : Principal;
   };
 
+  type UserProfile = {
+    name : Text;
+    email : Text;
+    address : Text;
+  };
+
+  module Product {
+    public func compare(a : Product, b : Product) : Order.Order {
+      Int.compare(a.id, b.id);
+    };
+  };
+
   // State for products, carts, and orders
-  let products = Map.empty<Nat, Product>();
-  let carts = Map.empty<Principal, [CartItem]>();
-  let orders = Map.empty<Nat, Order>();
+  let products : Map.Map<Nat, Product> = Map.empty();
+  let carts : Map.Map<Principal, [CartItem]> = Map.empty();
+  let orders : Map.Map<Nat, Order> = Map.empty();
+  let userProfiles : Map.Map<Principal, UserProfile> = Map.empty();
 
   // Access control state
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
 
-  // Function to safely convert Int to Nat with runtime trap for negative values
+  // Helper function for Int to Nat conversion
   func safeIntToNat(intValue : Int) : Nat {
     intValue.toNat();
   };
 
-  // Initialize with sample products
+  // User Profile Functions
+  public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can view profiles");
+    };
+    userProfiles.get(caller);
+  };
+
+  public query ({ caller }) func getUserProfile(user : Principal) : async ?UserProfile {
+    if (caller != user and not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized: Can only view your own profile");
+    };
+    userProfiles.get(user);
+  };
+
+  public shared ({ caller }) func saveCallerUserProfile(profile : UserProfile) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can save profiles");
+    };
+    userProfiles.add(caller, profile);
+  };
+
+  // Initialize product catalog (admin only)
   public shared ({ caller }) func initialize() : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can initialize products");
     };
-    products.add(1, {
-      id = 1;
-      name = "Smartphone";
-      description = "Latest model quad-core smartphone";
-      priceCents = 69900;
-      category = "Electronics";
-      imageUrl = "/images/smartphone.jpg";
-      rating = 4.5;
-      reviewCount = 120;
-      stock = 50;
-    });
-    products.add(2, {
-      id = 2;
-      name = "Laptop";
-      description = "13\" ultrabook with 16GB RAM";
-      priceCents = 129900;
-      category = "Electronics";
-      imageUrl = "/images/laptop.jpg";
-      rating = 4.7;
-      reviewCount = 85;
-      stock = 30;
-    });
-    products.add(3, {
-      id = 3;
-      name = "Headphones";
-      description = "Premium noise-cancelling headphones";
-      priceCents = 24900;
-      category = "Electronics";
-      imageUrl = "/images/headphones.jpg";
-      rating = 4.3;
-      reviewCount = 200;
-      stock = 80;
-    });
+
+    let initialProducts : [Product] = [
+      // Laptops
+      {
+        id = 1;
+        name = "ProBook Ultra 14";
+        description = "14\" high-performance laptop with Intel Core i7, 16GB RAM, 512GB SSD.";
+        priceCents = 129900;
+        category = "Laptops";
+        imageUrl = "https://images.unsplash.com/photo-1517336714731-489689fd1ca8";
+        rating = 4.8;
+        reviewCount = 245;
+        stock = 20;
+      },
+      {
+        id = 2;
+        name = "GameForce X17";
+        description = "17\" gaming laptop with RTX 3070, AMD Ryzen 7, 32GB RAM, 1TB SSD.";
+        priceCents = 189900;
+        category = "Laptops";
+        imageUrl = "https://images.unsplash.com/photo-1519125323398-675f0ddb6308";
+        rating = 4.6;
+        reviewCount = 180;
+        stock = 15;
+      },
+      {
+        id = 3;
+        name = "SlimBook Air 13";
+        description = "Ultra-thin 13\" laptop with Intel Core i5, 8GB RAM, 256GB SSD.";
+        priceCents = 99900;
+        category = "Laptops";
+        imageUrl = "https://images.unsplash.com/photo-1498050108023-c5249f4df085";
+        rating = 4.4;
+        reviewCount = 160;
+        stock = 25;
+      },
+      {
+        id = 4;
+        name = "WorkStation Pro 15";
+        description = "15\" productivity laptop with Intel Core i9, 32GB RAM, 1TB SSD.";
+        priceCents = 159900;
+        category = "Laptops";
+        imageUrl = "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2";
+        rating = 4.7;
+        reviewCount = 210;
+        stock = 12;
+      },
+      {
+        id = 5;
+        name = "BudgetBook 15.6";
+        description = "Affordable 15.6\" laptop with Intel Core i3, 4GB RAM, 256GB SSD.";
+        priceCents = 54900;
+        category = "Laptops";
+        imageUrl = "https://images.unsplash.com/photo-1461749280684-dccba630e2f6";
+        rating = 4.2;
+        reviewCount = 95;
+        stock = 30;
+      },
+      // Mobiles
+      {
+        id = 6;
+        name = "Galaxy Nova Pro";
+        description = "5G smartphone with Snapdragon 888, 128GB storage, 48MP camera.";
+        priceCents = 89900;
+        category = "Mobiles";
+        imageUrl = "https://images.unsplash.com/photo-1506744038136-46273834b3fb";
+        rating = 4.5;
+        reviewCount = 310;
+        stock = 50;
+      },
+      {
+        id = 7;
+        name = "iPhone Ultra 15";
+        description = "Latest iPhone with A15 Bionic chip, 256GB storage, 6.7\" OLED display.";
+        priceCents = 119900;
+        category = "Mobiles";
+        imageUrl = "https://images.unsplash.com/photo-1512436991641-6745cdb1723f";
+        rating = 4.7;
+        reviewCount = 400;
+        stock = 40;
+      },
+      {
+        id = 8;
+        name = "Pixel Vision 8";
+        description = "Android smartphone with Google Tensor chip, 128GB storage, dual cameras.";
+        priceCents = 69900;
+        category = "Mobiles";
+        imageUrl = "https://images.unsplash.com/photo-1454023492550-5696f8ff10e1";
+        rating = 4.4;
+        reviewCount = 175;
+        stock = 35;
+      },
+      {
+        id = 9;
+        name = "Xperia Edge 5G";
+        description = "5G smartphone with 64MP camera, 256GB storage, waterproof design.";
+        priceCents = 79900;
+        category = "Mobiles";
+        imageUrl = "https://images.unsplash.com/photo-1465101046530-73398c7f28ca";
+        rating = 4.3;
+        reviewCount = 120;
+        stock = 28;
+      },
+      {
+        id = 10;
+        name = "BudgetPhone 5G";
+        description = "Affordable 5G smartphone with 64GB storage, 24MP camera.";
+        priceCents = 29900;
+        category = "Mobiles";
+        imageUrl = "https://images.unsplash.com/photo-1468449032589-876ed4b3e049";
+        rating = 4.1;
+        reviewCount = 80;
+        stock = 60;
+      },
+      // Accessories
+      {
+        id = 11;
+        name = "NoiseBlock Pro Headphones";
+        description = "Wireless noise-cancelling headphones with 40-hour battery life.";
+        priceCents = 24900;
+        category = "Accessories";
+        imageUrl = "https://images.unsplash.com/photo-1517336714731-489689fd1ca8";
+        rating = 4.6;
+        reviewCount = 150;
+        stock = 45;
+      },
+      {
+        id = 12;
+        name = "TurboCharge 65W";
+        description = "Fast-charging adapter compatible with laptops and mobiles.";
+        priceCents = 3900;
+        category = "Accessories";
+        imageUrl = "https://images.unsplash.com/photo-1519125323398-675f0ddb6308";
+        rating = 4.8;
+        reviewCount = 110;
+        stock = 100;
+      },
+      {
+        id = 13;
+        name = "WirelessBuds X3";
+        description = "True wireless earbuds with Bluetooth 5.2 and noise isolation.";
+        priceCents = 9900;
+        category = "Accessories";
+        imageUrl = "https://images.unsplash.com/photo-1512436991641-6745cdb1723f";
+        rating = 4.4;
+        reviewCount = 220;
+        stock = 75;
+      },
+      {
+        id = 14;
+        name = "ProCase Laptop Sleeve";
+        description = "Waterproof laptop sleeve for 13\" to 15.6\" laptops.";
+        priceCents = 2900;
+        category = "Accessories";
+        imageUrl = "https://images.unsplash.com/photo-1454023492550-5696f8ff10e1";
+        rating = 4.7;
+        reviewCount = 95;
+        stock = 60;
+      },
+      // Tablets
+      {
+        id = 15;
+        name = "SmartTab Pro 11";
+        description = "11\" tablet with Snapdragon processor, 128GB storage, stylus support.";
+        priceCents = 59900;
+        category = "Tablets";
+        imageUrl = "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2";
+        rating = 4.5;
+        reviewCount = 130;
+        stock = 22;
+      },
+    ];
+
+    for (product in initialProducts.values()) {
+      products.add(product.id, product);
+    };
   };
 
-  // Products
-  public query ({ caller }) func listProducts() : async [Product] {
+  // Product Catalog Functions (Public - accessible to all including guests)
+  public query func listProducts() : async [Product] {
+    // No authorization check - public access for all users including guests
     products.values().toArray().sort();
   };
 
-  public query ({ caller }) func getProduct(id : Nat) : async Product {
+  public query func getProduct(id : Nat) : async Product {
+    // No authorization check - public access for all users including guests
     switch (products.get(id)) {
       case (null) { Runtime.trap("Product not found") };
       case (?product) { product };
     };
   };
 
-  public query ({ caller }) func filterProductsByCategory(category : Text) : async [Product] {
+  public query func filterProductsByCategory(category : Text) : async [Product] {
+    // No authorization check - public access for all users including guests
     let filtered = products.values().toArray().filter(
       func(p) { p.category == category }
     );
     filtered.sort();
   };
 
-  public query ({ caller }) func searchProducts(searchTerm : Text) : async [Product] {
+  public query func searchProducts(searchTerm : Text) : async [Product] {
+    // No authorization check - public access for all users including guests
     let filtered = products.values().toArray().filter(
       func(p) { p.name.contains(#text searchTerm) }
     );
     filtered.sort();
   };
 
-  // Cart
+  // Shopping Cart Functions (User-only)
   public shared ({ caller }) func addToCart(productId : Nat, quantity : Nat) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can add items to cart");
@@ -219,7 +391,7 @@ actor {
     carts.remove(caller);
   };
 
-  // Orders
+  // Order Functions
   public shared ({ caller }) func placeOrder() : async Nat {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can place orders");
