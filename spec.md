@@ -1,29 +1,22 @@
 # SAT Store
 
 ## Current State
-- Full-stack ecommerce app with Motoko backend and React frontend.
-- Backend supports products, cart, orders, search, and category filtering.
-- Only 3 seed products (Smartphone, Laptop, Headphones) initialized via admin `initialize()` call.
-- Frontend has HomePage, ProductsPage, ProductDetailPage, CartPage, OrdersPage, OrderConfirmationPage.
-- Categories shown: Electronics, Clothing, Books, Home & Kitchen, Sports, Toys.
+An Amazon-inspired ecommerce website with 15 products across 4 categories: Laptops (5), Mobiles (5), Accessories (4), Tablets (1). The frontend supports 6 category filters: Laptops, Mobiles, Tablets, Accessories, Electronics, Gaming — but Electronics and Gaming have no products. The backend `initialize()` function seeds the 15 products.
 
 ## Requested Changes (Diff)
 
 ### Add
-- More products in the backend seed data: at least 5 laptops and 5 mobiles/smartphones, plus a few accessories.
-- Dedicated "Laptops" and "Mobiles" categories visible on the homepage category grid.
-- Featured sections on the homepage specifically for Laptops and Mobiles.
+- 2 more Tablets (iPad Air 5th Gen, Galaxy Tab S8) — IDs 16, 17
+- 3 more Accessories (MechType Pro Keyboard, PrecisionGlide Mouse, 4K USB-C Monitor) — IDs 18, 19, 20
+- 5 Electronics products (SmartWatch Ultra X, Bluetooth Speaker 360, Dash Cam 4K Pro, E-Reader Lite 6", Smart Home Hub) — IDs 21–25
+- 5 Gaming products (GamePad Pro Controller, Gaming Headset 7.1, Gaming Chair ErgoX, RGB Gaming Mouse Pad XL, Portable Gaming Console) — IDs 26–30
 
 ### Modify
-- Backend `initialize()` function: expand seed products to include ~15 products total, covering Laptops, Mobiles, Headphones, Tablets, and Accessories categories.
-- Homepage category grid: replace or extend to include "Laptops" and "Mobiles" as prominent categories.
-- ProductsPage: ensure "Laptops" and "Mobiles" appear in filter options.
+- Backend `initialize()` to include all 30 products (IDs 1–30)
 
 ### Remove
-- Nothing removed — existing functionality preserved.
+- Nothing
 
 ## Implementation Plan
-1. Update `main.mo` to add ~15 seed products with proper Laptops and Mobiles categories and realistic names, prices, descriptions.
-2. Update the frontend HomePage to add "Laptops" and "Mobiles" to the CATEGORIES array and add dedicated featured sections for each.
-3. Ensure ProductsPage category filter includes Laptops and Mobiles.
-4. Keep all existing pages and backend APIs intact.
+1. Regenerate backend with all 30 products in `initialize()`, keeping all existing functionality (cart, orders, user profiles, authorization) intact
+2. No frontend changes needed — Electronics and Gaming tabs already exist

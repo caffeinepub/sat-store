@@ -10,9 +10,10 @@ import Iter "mo:core/Iter";
 import Array "mo:core/Array";
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
+import Migration "migration";
 
+(with migration = Migration.run)
 actor {
-  // Types for Product, Cart, and Orders
   type Product = {
     id : Nat;
     name : Text;
@@ -64,22 +65,18 @@ actor {
     };
   };
 
-  // State for products, carts, and orders
   let products : Map.Map<Nat, Product> = Map.empty();
   let carts : Map.Map<Principal, [CartItem]> = Map.empty();
   let orders : Map.Map<Nat, Order> = Map.empty();
   let userProfiles : Map.Map<Principal, UserProfile> = Map.empty();
 
-  // Access control state
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
 
-  // Helper function for Int to Nat conversion
   func safeIntToNat(intValue : Int) : Nat {
     intValue.toNat();
   };
 
-  // User Profile Functions
   public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can view profiles");
@@ -101,7 +98,6 @@ actor {
     userProfiles.add(caller, profile);
   };
 
-  // Initialize product catalog (admin only)
   public shared ({ caller }) func initialize() : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can initialize products");
@@ -265,18 +261,6 @@ actor {
         reviewCount = 95;
         stock = 60;
       },
-      // Tablets
-      {
-        id = 15;
-        name = "SmartTab Pro 11";
-        description = "11\" tablet with Snapdragon processor, 128GB storage, stylus support.";
-        priceCents = 59900;
-        category = "Tablets";
-        imageUrl = "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2";
-        rating = 4.5;
-        reviewCount = 130;
-        stock = 22;
-      },
     ];
 
     for (product in initialProducts.values()) {
@@ -284,14 +268,11 @@ actor {
     };
   };
 
-  // Product Catalog Functions (Public - accessible to all including guests)
   public query func listProducts() : async [Product] {
-    // No authorization check - public access for all users including guests
     products.values().toArray().sort();
   };
 
   public query func getProduct(id : Nat) : async Product {
-    // No authorization check - public access for all users including guests
     switch (products.get(id)) {
       case (null) { Runtime.trap("Product not found") };
       case (?product) { product };
@@ -299,7 +280,6 @@ actor {
   };
 
   public query func filterProductsByCategory(category : Text) : async [Product] {
-    // No authorization check - public access for all users including guests
     let filtered = products.values().toArray().filter(
       func(p) { p.category == category }
     );
@@ -307,14 +287,12 @@ actor {
   };
 
   public query func searchProducts(searchTerm : Text) : async [Product] {
-    // No authorization check - public access for all users including guests
     let filtered = products.values().toArray().filter(
       func(p) { p.name.contains(#text searchTerm) }
     );
     filtered.sort();
   };
 
-  // Shopping Cart Functions (User-only)
   public shared ({ caller }) func addToCart(productId : Nat, quantity : Nat) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can add items to cart");
@@ -391,7 +369,6 @@ actor {
     carts.remove(caller);
   };
 
-  // Order Functions
   public shared ({ caller }) func placeOrder() : async Nat {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can place orders");
